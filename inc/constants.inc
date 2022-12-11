@@ -46,3 +46,10 @@ def	SNAKE_LENGTH	equ 3
 def	SNAKE_Y		equ 7
 def	SNAKE_X		equ 7
 def	SNAKE_DELAY	equ 30
+; console
+def CONSOLEB_CGB equ 0
+def CONSOLEB_SGB equ 1
+def CONSOLEB_MOD equ 2
+def CONSOLEF_CGB equ 1 << CONSOLEB_CGB
+def CONSOLEF_SGB equ 1 << CONSOLEB_SGB
+def CONSOLEF_MOD equ 1 << CONSOLEB_MOD
