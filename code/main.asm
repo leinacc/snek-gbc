@@ -534,7 +534,9 @@ SnakeDisplay::
 	sub b
 	push af ; save for later
 	call SnakePosDir
-	ld a, BASE_EMPTY
+	ld a, b
+	xor a, c ; check if current pos is even/odd
+	and a, BASE_EMPTY | %1 ; discard upper bits
 	call Pos2SCRN
 	; display body
 	ld a, [wSnakeBuffer.head]
