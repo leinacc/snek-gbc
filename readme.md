@@ -3,8 +3,6 @@
 **Snek!** or **snek-gbc** is an open source snake clone for the game boy,
 super game boy and game boy color consoles, written in assembly using rgbds
 
-(of course the game itself )
-
 ### compiling
 
 to compile this, you will need:
