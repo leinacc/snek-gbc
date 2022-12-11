@@ -545,8 +545,8 @@ SnakeDisplay::
 	call SnakePosDir ; get more positions and directions
 	; do epic maths
 	pop de
-	clc
-	rla
+	or a ; clear carry
+	rla ; multiply by 2
 	rla
 	or d
 	add a, BASE_SNAKE_BODY ; add offset
@@ -699,6 +699,8 @@ Pos2SCRN: ; hl = bc as SCRN position, a = a
 
 SECTION "gameover", ROM0
 GameOver:
+	ld a, $e4
+	ldh [rBGP], a
 	call SnakeDisplay
 	ld sp, wStack.origin
 		; load game over graphic
