@@ -442,8 +442,8 @@ Snake:
 	; the funny anti-180 logic!
 	ldh a, [hFacing]
 	ld b, -1
-	clc
-	:rla ; convert to shifts
+	or a ; clear carry
+:	rla ; convert to shifts
 	inc b
 	jr nc, :-
 	rla ; ld a, $01
