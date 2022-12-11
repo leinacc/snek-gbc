@@ -110,9 +110,18 @@ EmuTest: ; using this dumb method, you can catch almost every emulator!
 	ld bc, Bad1bpp.end - Bad1bpp
 	call SafeCpy1bpp
 	; quick init
+	; clear this stupid buffer to prevent garbage from displaying
+	ld hl, wGameTilemap.statusbar
+	ld b, wGameTilemap.end - wGameTilemap.statusbar
+	xor a
+	ld [wVBuffer.size], a ; also clear this
+	call ShortSet
+	; enable interrupts
+	ldh [rIF], a ; a should be 0
 	ld a, IEF_VBLANK
 	ldh [rIE], a
 	ei
+	; init the tilemap
 	xor a
 	ldh [rSCY], a
 	ldh [rSCX], a
