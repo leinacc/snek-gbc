@@ -7,3 +7,6 @@
 *.tilemap
 *.pct
 *.[cs]pal
+*.lnk
+*.txt
+*.pal

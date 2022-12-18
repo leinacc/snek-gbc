@@ -217,18 +217,10 @@ Joy:: ; reads joypad, b - no. of joypads (if more than 1), clobbers (b)c, hl
 	ret
 
 SECTION "joypads", HRAM
-	hP1:: ds 1
+rept PLAYERS
+	hP{x:PLAYERS}:: ds 1
 	.x:: ds 1
-	if PLAYERS > 1
-		hP2:: ds 1
-		.x:: ds 1
-		if PLAYERS > 2
-			hP3:: ds 1
-			.x:: ds 1
-			hP4:: ds 1
-			.x:: ds 1
-		endc
-	endc
+endr
 
 ; someone please if youre reading this remind me to
 ; rewrite this entire thing at some point or something
@@ -293,7 +285,7 @@ Multiply:: ; hl = b * c, clobbers a
 	rra ; check bit 0, shift a, carry must be reset
 	jr nc, :+
 	add hl, bc ; add if carry set
-	:sla c ; shift bc left
+:	sla c ; shift bc left
 	rl b
 	and a ; end as soon as out of bits, also clears carry
 	jr nz, .loop
