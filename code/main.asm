@@ -876,6 +876,6 @@ db "would you look at that, someone checked this in a hex editor! well, hi there
 "is a little hidden easter egg that may or may not become viewable in-game, 'nyways, heres a list of ", \
 "cool people, some of them even directly helped! : Eeivui/Evie, PinoBatch/Pin8, ISSO/ISSOtm ", \
 "calc84maniac, rangi, bbbbbr, aaaaaa123456789/ax6, yumaikas, piellow/lordpillows, nezuo, kaselord, ", \
-"falcon nova, hail, delivery cat, zeta0134, kasumi "
+"falcon nova, hail, delivery cat, zeta0134, kasumi, bella marie, leina, genericheroguy "
 db "<NEWLINE> this was quite fun to make, reaching the end of v1.0 felt quite special, and.. ", \
 "ok i dont have much else to say, thanks for finding this data, cya! *ceases to exist*"
