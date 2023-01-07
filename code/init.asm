@@ -331,6 +331,9 @@ Start:
 	ld de, wSPalTitle
 	ld b, 16*2
 	call ShortCpy
+	; reset RNG
+	ld bc, 1
+	call srand
 	; prep tilemaps
 	ld hl, GameTilemap ; source
 	ld de, wGameTilemap; dest
