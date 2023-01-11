@@ -81,6 +81,7 @@ ColorCheck: ; its a mess!
 	.modelC
 	ld [hConsole], a
 
+/* temporarily removed cause itll trip on the homebrew hub emulator
 EmuTest: ; using this dumb method, you can catch almost every emulator!
 	pop af
 		pop bc
@@ -161,6 +162,7 @@ EmuTest: ; using this dumb method, you can catch almost every emulator!
 	dec b
 	jr nz, .loop
 	di
+*/
 Start:
 	; test for SGB
 	xor a
@@ -513,6 +515,7 @@ SafeCpy1bpp:: ; like "SafeCpy", but modified for 1bpp
 	jr nz, .loop ; repeat
 	ret
 
+/* temporarily removed cause itll trip on the homebrew hub emulator
 SECTION "bademuchr", ROM0
 Bad1bpp:
 	INCBIN "gfx/bin/bad.1bpp"
@@ -531,6 +534,7 @@ EmuRegs:
 	dw $1180, $0000, $FF56, $000D ; CGB
 	dw $1100, $0100, $FF56, $000D ; AGB
 	.end
+*/
 
 SECTION "packets", ROM0
 Packets:

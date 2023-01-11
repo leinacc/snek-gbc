@@ -204,7 +204,7 @@ JoyCheck::	; check if input changed
 	ld a, PADF_RIGHT
 	jr .done
 :	xor a
-	.done ; store to RAM
+.done ; store to RAM
 	ldh [hFacing], a
 	ld a, d
 	ldh [hVel.y], a

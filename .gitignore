@@ -11,3 +11,6 @@
 *.txt
 *.pal
 bgb.bat
+hh/
+*.sublime-workspace
+*.sublime-project
