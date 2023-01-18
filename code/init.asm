@@ -242,6 +242,17 @@ Start:
 		rept 8
 			halt
 		endr
+
+if def(CUSTOM_ATTRS)
+		ld hl, CustomChrPackets
+		rept 22
+			call Packet
+			rept 4
+				halt
+			endr
+		endr
+endc
+
 		; border nametable
 		ld hl, BorderTilemap
 		ld de, _VRAM
@@ -493,7 +504,17 @@ GameInit::
 	ld de, _SCRN0
 	ld bc, wGameTilemap.statusbar - wGameTilemap
 	call SafeCpy
-	ret
+if def(CUSTOM_ATTRS)
+; marker to say we're in an in-game state
+	ld hl, .data
+	ld de, wSnesSnakeData
+	ld bc, 8
+	call SafeCpy
+	jr :+
+.data:
+	db $5a, $03, SNAKE_X, SNAKE_Y, SNAKE_X, SNAKE_Y+1, SNAKE_X, SNAKE_Y+2
+endc
+:	ret
 
 SECTION "1bppcpy", ROM0
 SafeCpy1bpp:: ; like "SafeCpy", but modified for 1bpp
@@ -567,6 +588,34 @@ db $01
 ds 5, $00
 db %11000000 | $01
 ds 6, $00
+
+if def(CUSTOM_ATTRS)
+CustomChrPackets:
+db $79, $00, $09, $7e, $0b, $c2, $20, $ad, $84, $02, $18, $69, $30, $15, $85, $03
+db $79, $0b, $09, $7e, $0b, $e2, $20, $a9, $7e, $85, $05, $a7, $03, $c9, $5a, $d0
+db $79, $16, $09, $7e, $0b, $48, $af, $00, $20, $7f, $c9, $01, $f0, $42, $a9, $7e
+db $79, $21, $09, $7e, $0b, $85, $02, $c2, $30, $a9, $3f, $21, $8f, $72, $ad, $7e
+db $79, $2c, $09, $7e, $0b, $a9, $4c, $a9, $85, $00, $a2, $10, $00, $da, $a0, $00
+db $79, $37, $09, $7e, $0b, $00, $a2, $10, $00, $b7, $00, $29, $ff, $e3, $09, $00
+db $79, $42, $09, $7e, $0b, $14, $97, $00, $c8, $c8, $ca, $d0, $f1, $a5, $00, $18
+db $79, $4d, $09, $7e, $0b, $69, $40, $00, $85, $00, $fa, $ca, $d0, $de, $e2, $30
+db $79, $58, $09, $7e, $0b, $a9, $01, $8d, $01, $02, $80, $02, $a9, $00, $8f, $00
+db $79, $63, $09, $7e, $03, $20, $7f, $60, $00, $00, $00, $00, $00, $00, $00, $00 ; 10
+
+db $79, $00, $0a, $7e, $0b, $af, $00, $20, $7f, $d0, $01, $60, $c2, $20, $ad, $84
+db $79, $0b, $0a, $7e, $0b, $02, $18, $69, $31, $15, $85, $00, $e2, $20, $a9, $7e
+db $79, $16, $0a, $7e, $0b, $85, $02, $85, $07, $a9, $00, $85, $04, $85, $08, $a0
+db $79, $21, $0a, $7e, $0b, $00, $b7, $00, $d0, $01, $60, $b7, $00, $d0, $06, $a9
+db $79, $2c, $0a, $7e, $0b, $01, $8d, $01, $02, $60, $10, $1b, $29, $7f, $aa, $c8
+db $79, $37, $0a, $7e, $0b, $a9, $14, $85, $09, $20, $56, $0a, $a7, $05, $29, $ff
+db $79, $42, $0a, $7e, $0b, $e3, $05, $08, $87, $05, $e2, $20, $ca, $d0, $ef, $80
+db $79, $4d, $0a, $7e, $0b, $d9, $aa, $c8, $a9, $04, $85, $09, $80, $e5, $da, $b7
+db $79, $58, $0a, $7e, $0b, $00, $c8, $0a, $85, $03, $b7, $00, $c8, $c2, $20, $29
+db $79, $63, $0a, $7e, $0b, $ff, $00, $0a, $0a, $0a, $0a, $0a, $0a, $18, $65, $03
+db $79, $6e, $0a, $7e, $07, $69, $4c, $a9, $85, $05, $fa, $60, $00, $00, $00, $00 ; 11
+
+db $79, $08, $08, $7e, $0b, $4c, $00, $09, $00, $00, $00, $00, $00, $4c, $00, $0a ; 1
+endc
 
 SECTION "rampackets", WRAM0
 wSPalTitle::	ds 16

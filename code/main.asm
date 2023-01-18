@@ -245,6 +245,11 @@ StatusbarUpdate:
 	ld [hl+], a
 	dec b
 	jr nz, .lengthLoop
+if def(CUSTOM_ATTRS)
+; tile to be hidden by snes with custom data
+	ld a, $36
+	ld [hl+], a
+endc
 	; time
 	ld hl, wGameTilemap.statusbar+$20
 	ld a, BASE_STATUSBAR+4
@@ -413,6 +418,16 @@ Length:
 
 SECTION "snake", ROM0
 Snake:	
+if def(CUSTOM_ATTRS)
+; 0 out pending tilemap updates
+	ld de, wSnesSnakeData+1
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	xor a
+	ld [de], a
+endc
+
 	; make sure next part only runs when needed
 	; check if A or B is held
 		; do these comments make sense?
@@ -483,6 +498,38 @@ Snake:
 	call nc, GameOver
 	inc l
 	ld [hl], a
+if def(CUSTOM_ATTRS)
+; copy 'bytes to add'
+	ld de, wSnesSnakeData+1
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	ld a, $01
+	ld [de], a
+	inc de
+; copy snake x
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	ld a, [hl]
+	ld [de], a
+	inc de
+; copy snake y
+	dec h
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	ld a, [hl]
+	ld [de], a
+	inc de
+	inc h
+; zero out 'removed part'
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	xor a
+	ld [de], a
+endc
 	; check if colliding with food
 	ld c, [hl]
 	ld a, [hFood.x]
@@ -498,7 +545,49 @@ Snake:
 	adc 0 ; dont go past 255 length
 	ld [wSnakeBuffer.length], a
 	call FoodEaten
-	.skipFood
+if def(CUSTOM_ATTRS)
+	jr .afterFood
+.skipFood
+; copy over tail marker
+	ld de, wSnesSnakeData+4
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	ld a, $81
+	ld [de], a
+	inc de
+; copy over tail x
+	ld a, [wSnakeBuffer.length]
+	ld b, a
+	ld a, [wSnakeBuffer.head]
+	sub b
+	ld l, a
+	ld h, HIGH(wSnakeBuffer.y)
+	ld b, [hl]
+	inc h
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	ld a, [hl]
+	ld [de], a
+	inc de
+; copy over tail y
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	ld a, b
+	ld [de], a
+	inc de
+; zero out end
+:	ldh a, [rSTAT]
+	and STATF_BUSY
+	jr nz, :-
+	xor a
+	ld [de], a
+.afterFood
+else
+.skipFood
+endc
 	; check if colliding with self
 	ld a, [wSnakeBuffer.length]
 	cp 1
@@ -698,6 +787,9 @@ Pos2SCRN: ; hl = bc as SCRN position, a = a
 	ld h, a
 	pop af
 	jp VBufferPush ; tail calling
+
+SECTION "snake tiledata", VRAM[$8360]
+	wSnesSnakeData::
 
 SECTION "gameover", ROM0
 GameOver:
