@@ -64,8 +64,12 @@ MainLoop:: ; quickly setup title screen
 	ld a, b
 	and PADF_SELECT
 	jr z, .skipDebugPalEn
-	ld a, DEBUGF_PALETTE
-	ldh [hDebug], a
+	;ld a, DEBUGF_PALETTE
+	;ldh [hDebug], a
+	; as a placeholder, CPU meter replaced by wrapping toggle
+	ldh a, [hWrapping]
+	cpl
+	ldh [hWrapping], a
 	.skipDebugPalEn
 	call rand
 	jr .loop
@@ -343,6 +347,7 @@ AddBonus::
 
 SECTION "time", ROM0
 Time: ; uses hl as an argument
+		; this is incorrect??? i do recall wanting a pause timer though
 	; check if grading enabled
 	ldh a, [hGrading]
 	and a
@@ -464,11 +469,17 @@ Snake:
 	ld l, a
 	dec l
 	ld h, HIGH(wSnakeBuffer.y) ; advance snake
-	ld a, [hVel.y]
-	ld b, [hl]
-	add b ; then apply velocity
-	cp 16 ; kill if OOB
-	call nc, GameOver
+	ldh a, [hVel.y]
+	add [hl] ; then apply velocity
+	cp 16 ; if OOB, check mode
+	jr c, .noWallY
+	ld b, a
+	ldh a, [hWrapping]
+	and a
+	call z, GameOver ; kill if wrapping disabled
+	ld a, b
+	and $0f ; wrap around otherwise
+.noWallY
 	inc l
 	ld [hl], a
 	dec l
@@ -476,11 +487,17 @@ Snake:
 	inc h
 		ASSERT FAIL, wSnakeBuffer.x - wSnakeBuffer.y == 256
 		ASSERT FAIL, wSnakeBuffer & $ff == 0
-	ld a, [hVel.x]
-	ld b, [hl]
-	add b ; then apply velocity
-	cp 16 ; kill if OOB
-	call nc, GameOver
+	ldh a, [hVel.x]
+	add [hl] ; then apply velocity
+	cp 16 ; if OOB, check mode
+	jr c, .noWallX
+	ld b, a
+	ldh a, [hWrapping]
+	and a
+	call z, GameOver ; kill if wrapping disabled
+	ld a, b
+	and $0f ; wrap around otherwise
+.noWallX
 	inc l
 	ld [hl], a
 	; check if colliding with food
@@ -769,21 +786,22 @@ wGameDataEnd::
 
 SECTION "other", HRAM
 	hOther::
-	hFacing::	ds 1 ; current direction, as input
-	.forbid::	ds 1 ; last direction
-	hDelay::	ds 1 ; frames before next move
+	hFacing::   ds 1 ; current direction, as input
+	.forbid::   ds 1 ; last direction
+	hDelay::    ds 1 ; frames before next move
 	hVel:: ; current direction, as a vector
-		.y::	ds 1 
-		.x::	ds 1
+		.y::    ds 1 
+		.x::    ds 1
 	hFood: ; fruit position
-		.y	ds 1
-		.x	ds 1
-		.fail	ds 1 ; fruit spawn attempts
-	hBonus::	ds 2 ; score to be added
-	hGrading::	ds 1 ; nonzero disables grading
-	hDebug::	ds 1 ; funny performance viewer
+		.y      ds 1
+		.x      ds 1
+		.fail   ds 1 ; fruit spawn attempts
+	hBonus::    ds 2 ; score to be added
+	hGrading::  ds 1 ; nonzero disables grading
+	hDebug::    ds 1 ; funny performance viewer
+	hWrapping:: ds 1 ; self-explainatory hopefully
 	hOtherEnd::
-	hConsole::	ds 1 ; console version
+	hConsole::  ds 1 ; console version
 
 SECTION "tilemapbuffers", WRAM0, align[1]
 wGameTilemap::
