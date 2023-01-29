@@ -310,59 +310,49 @@ Score:
 	; they will be decremented each time a digit inc check fails
 	ld hl, wScore + 3
 	ld b, wScore.end - (wScore + 3)
-	; check how much score and subtrack hBonus
-		ld a, $f0 ; if 4096+
-		and d
-		jr z, .skip1000
-		; subtract 1000 from hBonus
-		ld a, e
-		sub LOW(1000)
-		ldh [hBonus+0], a
-		ld a, d
-		sbc HIGH(1000)
-		ldh [hBonus+1], a
-		jr .loop
-	.skip1000
-		dec b
-		dec hl
-
-		ld a, d ; if 256+
-		and a
-		jr z, .skip100
-		; subtract 100 from hBonus
-		ld a, e
-		sub LOW(100)
-		ldh [hBonus+0], a
-		ld a, d
-		sbc HIGH(100)
-		ldh [hBonus+1], a
-		jr .loop
-	.skip100
-		dec b
-		dec hl
-
-		ld a, $f0 ; if 16+
-		and e
-		jr z, .skip10
-		; subtract 10 from hBonus
-		ld a, e
-		sub LOW(10)
-		ldh [hBonus+0], a
-		ld a, d
-		sbc HIGH(10)
-		ldh [hBonus+1], a
-		jr .loop
-	.skip10
-		dec b
-		dec hl
-
-		; subtract 1 from hBonus
-		dec de
-		ld a, e
-		ldh [hBonus+0], a
-		ld a, d
-		ldh [hBonus+1], a
-	; increment score
+	; subtract some amount from hBonus (see below)
+	FOR V, 4
+		DEF TENS = 10**(3-V) ; figuring out that its DEF = and not SET = was like the worst part
+		if V == 0
+			; for 4096+, sub 1000
+			ld a, $f0
+			and d
+		elif V == 1
+			; for 256+, sub 100
+			ld a, d
+			and a
+		elif V == 2
+			; for 16+, sub 10
+			ld a, $f0
+			and e
+		elif V == 3
+			; for 1+, sub 1
+		else
+			fail "too many iterations or something"
+		endc
+		if V < 3
+			jr z, .skip{u:TENS}
+			; subtract a certain value (see above) from hBonus
+			ld a, e
+			sub LOW(TENS)
+			ldh [hBonus+0], a
+			ld a, d
+			sbc HIGH(TENS)
+			ldh [hBonus+1], a
+			jr .loop
+		.skip{u:TENS}
+			dec b
+			dec hl
+		else
+			; subtract 1 from hBonus
+			dec de
+			ld a, e
+			ldh [hBonus+0], a
+			ld a, d
+			ldh [hBonus+1], a
+		endc
+	ENDR
+	; then increment wScore by that value
 	.loop
 	ld a, [hl]
 	inc a
@@ -373,7 +363,7 @@ Score:
 	ld [hl+], a
 	dec b
 	jr nz, .loop
-	; if caps out, set to max and disable grading
+	; if score caps out, set it to max and disable grading
 	ld b, 8
 	dec hl
 	ld a, 9
