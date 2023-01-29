@@ -38,8 +38,6 @@ EntryPoint:
 	ds $150-@ ; pad for the required GB header
 	INCLUDE "inc/header.inc" ; my extended header, can be safely removed
 
-
-
 SECTION "main", ROM0
 MainLoop:: ; quickly setup title screen
 	; SGB palette
@@ -120,18 +118,18 @@ MainLoop:: ; quickly setup title screen
 	inc a
 	ld [hl], a
 	cp 10
-	jr c, .skip
+	jr c, .skipPauseCap
 	xor a
 	ld [hl+], a
 	ld a, [hl]
 	inc a
 	ld [hl], a
 	cp 10
-	jr c, .skip
+	jr c, .skipPauseCap
 	ld a, 9
 	ld [hl-], a
 	ld [hl], a
-	.skip
+	.skipPauseCap
 	ld hl, PauseTilemap
 	ld de, _SCRN0+$10
 	ld bc, 4
@@ -142,6 +140,15 @@ MainLoop:: ; quickly setup title screen
 	call Joy
 	call JoyCheck
 	call JoyCurrent
+	; update score counter if required
+		ldh a, [hBonus+0]
+		ld b, a
+		ldh a, [hBonus+1]
+		or b
+		jr z, .skipScoreUpdate
+		call Score
+		call StatusbarUpdate
+	.skipScoreUpdate
 	ld a, [hP1]
 	ld b, a
 	ld a, [hP1.x]
@@ -292,22 +299,70 @@ Score:
 	ldh a, [hGrading]
 	and a
 	ret nz
-	; check if any score
+	; load bonus to de, exit if zero
 	ldh a, [hBonus+0]
-	ld c, a
+	ld e, a
 	ldh a, [hBonus+1]
-	ld b, a
-	or c
+	ld d, a
+	or e
 	ret z
-	; decrement bonus
-	dec bc
-	ld a, c
-	ldh [hBonus+0], a
-	ld a, b
-	ldh [hBonus+1], a
+	; make these two point at the 4th digit
+	; they will be decremented each time a digit inc check fails
+	ld hl, wScore + 3
+	ld b, wScore.end - (wScore + 3)
+	; check how much score and subtrack hBonus
+		ld a, $f0 ; if 4096+
+		and d
+		jr z, .skip1000
+		; subtract 1000 from hBonus
+		ld a, e
+		sub LOW(1000)
+		ldh [hBonus+0], a
+		ld a, d
+		sbc HIGH(1000)
+		ldh [hBonus+1], a
+		jr .loop
+	.skip1000
+		dec b
+		dec hl
+
+		ld a, d ; if 256+
+		and a
+		jr z, .skip100
+		; subtract 100 from hBonus
+		ld a, e
+		sub LOW(100)
+		ldh [hBonus+0], a
+		ld a, d
+		sbc HIGH(100)
+		ldh [hBonus+1], a
+		jr .loop
+	.skip100
+		dec b
+		dec hl
+
+		ld a, $f0 ; if 16+
+		and e
+		jr z, .skip10
+		; subtract 10 from hBonus
+		ld a, e
+		sub LOW(10)
+		ldh [hBonus+0], a
+		ld a, d
+		sbc HIGH(10)
+		ldh [hBonus+1], a
+		jr .loop
+	.skip10
+		dec b
+		dec hl
+
+		; subtract 1 from hBonus
+		dec de
+		ld a, e
+		ldh [hBonus+0], a
+		ld a, d
+		ldh [hBonus+1], a
 	; increment score
-	ld hl, wScore
-	ld b, wScore.end - wScore
 	.loop
 	ld a, [hl]
 	inc a
