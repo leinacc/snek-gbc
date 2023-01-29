@@ -341,7 +341,7 @@ Score:
 			ldh [hBonus+1], a
 			jr .loop
 		.skip{u:TENS}
-			dec b
+			inc b
 			dec hl
 		else
 			; subtract 1 from hBonus
@@ -799,11 +799,11 @@ GameOver:
 
 SECTION "offdirlut", ROM0, ALIGN[8]
 OffDirLUT:
-;     Y =  0,+1,Er,-1
-	db 1, 0, 0, 1 ; X =  0
-	db 3, 3, 3, 1 ; X = +1
-	db 0, 0, 0, 1 ; X = Er
-	db 2, 2, 2, 1 ; X = -1
+; Y =  0,+1,Er,-1
+    db 1, 0, 0, 1 ; X =  0
+    db 3, 3, 3, 1 ; X = +1
+    db 0, 0, 0, 1 ; X = Er
+    db 2, 2, 2, 1 ; X = -1
 
 SECTION "snakebuffer", WRAM0, ALIGN[8]
 wSnakeBuffer::
