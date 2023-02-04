@@ -375,7 +375,7 @@ Score:
 	ldh [hGrading], a
 	ret
 
-AddBonus::
+AddBonus:: ; hBonus += bc, caps at $ffff on overflow
 	ldh a, [hBonus+0]
 	ld l, a
 	ldh a, [hBonus+1]
@@ -691,10 +691,45 @@ SnakePosDir:: ; bc = position of snake cell [a]
 	ret
 
 FoodEaten::
-	ld bc, BONUS_FOOD
-	call AddBonus
-	call Length
-	jp FoodReset ; tail call
+	; calculates score then sort of adds it, the exact formula should be:
+	; min(100, food eaten / 2 + 1) * min(255, BONUS_FOOD + hFood.fail * 50%)
+
+	; add 50% to the base bonus for
+	; each food spawn fail
+		ld b, BONUS_FOOD/2
+			assert HIGH(BONUS_FOOD/2) == 0
+		ldh a, [hFood.fail]
+		add 2
+		ld c, a
+		call Multiply
+	; cap at 255
+		ld a, h
+		ld c, l
+		and a ; also clears carry
+		jr z, .noFailCap
+		ld c, $ff
+		.noFailCap
+	; get amount of eaten food by doing math on wSnakeBuffer.length
+	; (wSnakeBuffer.length = food eaten + SNAKE_LENGTH)
+		ld a, [wSnakeBuffer.length]
+		sub SNAKE_LENGTH-1 ; but we also need to pre-increment
+			; (otherwise 1st pellet gives no score)
+	; then divide and cap at 100
+		rra
+		cp 100
+		jr c, .noLengthCap
+		ld a, 100
+		.noLengthCap
+	; finally, multiply the capped length by capped base bonus
+		ld b, a
+		call Multiply
+		ld b, h
+		ld c, l
+		call AddBonus
+	; then inc the displayed length
+		call Length
+	; and reset the pellet
+		jp FoodReset ; tail call
 
 FoodReset::
 	ld a, $ff
@@ -763,21 +798,34 @@ Pos2SCRN: ; hl = bc as SCRN position, a = a
 
 SECTION "gameover", ROM0
 GameOver:
-	ld a, $e4
-	ldh [rBGP], a
-	call SnakeDisplay
-	ld sp, wStack.origin
-		; load game over graphic
+	; reset palette, show how the player died, nuke stack
+		ld a, $e4
+		ldh [rBGP], a
+		call SnakeDisplay
+		ld sp, wStack.origin
+	; load game over graphic
 		ld hl, GameOverTilemap
 		ld de, _SCRN0+$10+(0*SCRN_VX_B)
 		ld bc, 4
 		call SafeCpy
-	ld a, 30 ; stall
+		push hl ; save for later
+	.score ; wait for score to finish counting
+		halt
+		call Score
+		call StatusbarUpdate
+		ldh a, [hBonus+0]
+		ld b, a
+		ldh a, [hBonus+1]
+		or a, b
+		jr nz, .score
+	; stall for half a second more
+		ld a, 30
 	.delay
-	halt
-	dec a
-	jr nz, .delay
+		halt
+		dec a
+		jr nz, .delay
 	; load rest
+		pop hl
 		ld de, _SCRN0+$10+(1*SCRN_VX_B)
 		ld bc, 4
 		call SafeCpy
