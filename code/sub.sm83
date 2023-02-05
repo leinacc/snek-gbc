@@ -275,8 +275,9 @@ SECTION "multiply", ROM0
 ; this is all unsigned
 ; this takes * 12MSSBb + BS + 22 M-cycles (up to 114 M-cycles)
 ; where MSSBb is the most significant set bit of b
+; (put the lower number in b for better speed)
 ; and BS is number of set bits in b register
-Multiply:: ; hl = b * c, clobbers a
+Multiply:: ; hl = b * c, clobbers a (a = 0)
 	ld hl, 0
 	ld a, b
 	ld b, 0
