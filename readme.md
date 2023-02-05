@@ -17,13 +17,15 @@ all of the above must be located in your PATH
 as stated above, you can build with either make or cmd
 
 if you have make:
-1. do `make` in the repo root
-2. open `bin/pong.gb` in your favourite emulator
+1. create folders `bin/`, `obj/` and `gfx/bin/`
+2. do `make` in the repo root
+3. open `bin/pong.gb` in your favourite emulator
 
 if you have something that runs `.bat`s:
-1. run `gfx/_ALL.bat` to convert the assets
-2. run `build.bat` to assemble, link and fix the rom
-3. open `bin/pong.gb` in your favourite emulator
+1. create folders `bin/`, `obj/` and `gfx/bin/`
+2. run `gfx/_ALL.bat` to convert the assets
+3. run `build.bat` to assemble, link and fix the rom
+4. open `bin/pong.gb` in your favourite emulator
 
 build artifacts will go in `bin/`, `obj/`, and `gfx/bin/`
 
