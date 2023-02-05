@@ -1,7 +1,7 @@
 # rgbasm defs
 DEFINES=
 
-ASM_REQS = $(shell find code/ -name '*.asm' | sed "s/code/obj/" | sed "s/\.asm/.o/" | sed "s/\.s/.z80/")
+ASM_REQS = $(shell find code/ -name '*.sm83' | sed "s/code/obj/" | sed "s/\.sm83/.o/")
 GFX_REQS = gfx/bin/arrows.2bpp gfx/bin/bad.1bpp gfx/bin/base.2bpp gfx/bin/base.spal \
 	gfx/bin/base.cpal gfx/bin/border.pal gfx/bin/border.4bpp gfx/bin/border.pct \
 	gfx/bin/game.tilemap gfx/bin/gamestop.tilemap gfx/bin/gamestop.1bpp \
@@ -26,8 +26,8 @@ gfx/bin/base.cpal: gfx/png/base.png
 gfx/bin/border.pal gfx/bin/border.4bpp gfx/bin/border.pct: gfx/png/border.png
 	superfamiconv -v -i $< -p gfx/bin/border.pal -t gfx/bin/border.4bpp -P 4 -m gfx/bin/border.pct -M snes --color-zero 0000ff -B 4
 
-gfx/bin/game.tilemap: gfx/png/game.png gfx/bin/base.2bpp gfx/bin/base.dpal
-	superfamiconv map -v -M gb -i gfx/png/game.png -p gfx/bin/base.dpal -t gfx/bin/base.2bpp -d $@ -B 2
+gfx/bin/game.tilemap: gfx/png/game.png gfx/bin/base.2bpp gfx/base.dpal
+	superfamiconv map -v -M gb -i gfx/png/game.png -p gfx/base.dpal -t gfx/bin/base.2bpp -d $@ -B 2
 
 gfx/bin/gamestop.tilemap gfx/bin/gamestop.1bpp: gfx/png/gamestop.png
 	rgbgfx -v -t gfx/bin/gamestop.tilemap -o gfx/bin/gamestop.1bpp $< -b 128 -d 1
@@ -44,12 +44,8 @@ gfx/bin/statusbar.1bpp: gfx/png/statusbar.png
 gfx/bin/title.1bpp gfx/bin/title.tilemap: gfx/png/title.png
 	rgbgfx -v -d 1 -o gfx/bin/title.1bpp $< -t gfx/bin/title.tilemap -u
 
-obj/%.o: code/%.asm
+obj/%.o: code/%.sm83 $(GFX_REQS)
 	rgbasm ${DEFINES} -h -Wall -i inc -o $@ $<
-
-obj/%.o: code/%.z80
-	rgbasm ${DEFINES} -h -Wall -i inc -o $@ $<
-
 
 bin/pong.gb: $(ASM_REQS) $(GFX_REQS)
 	rgblink -p 0xFF -m bin/pong.map -n bin/pong.sym -o $@ obj/main.o obj/init.o obj/sub.o obj/vblank.o obj/rand.o
