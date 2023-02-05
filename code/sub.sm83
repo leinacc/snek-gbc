@@ -1,8 +1,8 @@
 ; various subroutines such as memcpys, specific memcpys,
 ; OAM DMA, joy polling, basic SGB communication
 
-; theres also optimized div and mul, maybe ill go
-; crazy and write even more maths stuff?
+; theres also optimized div, mul, and non-table based crc32
+; maybe ill go crazy and write even more maths stuff?
 
 ; i dont know why youd use this over pinos stuff
 
@@ -34,7 +34,7 @@ MemCpy:: ; hl - src, de - dest, bc - length
 
 SECTION "shortcpy", ROM0
 ShortCpy:: ; hl - src, de - dest, b - length
-.loop	; copy a byte
+.loop ; copy a byte
 	ld a, [hl+]
 	ld [de], a
 	inc de
@@ -271,12 +271,12 @@ Packet:: ; sends an SGB packet, hl - src
 	ret
 
 SECTION "multiply", ROM0
-; multiply by adding, except with bitshifts to reduce required additions
-; this is all unsigned
+; unsigned multiplication,
+; using (if im not mistaken) binary long multiplication
 ; this takes * 12MSSBb + BS + 22 M-cycles (up to 114 M-cycles)
 ; where MSSBb is the most significant set bit of b
-; (put the lower number in b for better speed)
 ; and BS is number of set bits in b register
+; (for best(better) result put the lower value in b)
 Multiply:: ; hl = b * c, clobbers a (a = 0)
 	ld hl, 0
 	ld a, b
@@ -293,13 +293,12 @@ Multiply:: ; hl = b * c, clobbers a (a = 0)
 	ret
 
 SECTION "divide", ROM0
-; based on the "long division" method or whatever its called
-; since this is binary you only need one check per digit
+; unsigned division,
+; using binary long division
 ; big thanks to calc84maniac for pointing out a "nonbinding" optimization
 ; and evie/eievui for helping test and debug!
 ; division by zero returns a=l, hl=$ffff
-; up to 203 M-cycles for a bit 7 reset, 236 M-cycles otherwise
-; also this is unsigned division!!
+; up to 203 M-cycles if a's 7th bit is reset, 236 M-cycles otherwise
 Divide:: ; hl = hl / a, a = hl % a, clobbers de
 	ld d, a
 	ld e, 16 ; you could check if H is 0 and run for only 8 bits maybe?
